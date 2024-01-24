@@ -10,7 +10,7 @@ const handleAddTask = () => {
 
     console.log(inputIsValid);
 
-    if(!inputIsValid) {
+    if (!inputIsValid) {
         return inputElement.classList.add("error");
     }
 
@@ -22,6 +22,12 @@ const handleAddTask = () => {
 
     taskContent.addEventListener('click', () => handleClick(taskContent));
 
+    const editItem = document.createElement("i");
+    editItem.classList.add("far");
+    editItem.classList.add("fa-edit");
+
+    editItem.addEventListener('click', () => handleEditClick(taskContent));
+
     const deleteItem = document.createElement("i");
     deleteItem.classList.add("far");
     deleteItem.classList.add("fa-trash-alt");
@@ -29,6 +35,7 @@ const handleAddTask = () => {
     deleteItem.addEventListener('click', () => handleDeleteClick(taskItemContainer, taskContent));
 
     taskItemContainer.appendChild(taskContent);
+    taskItemContainer.appendChild(editItem);
     taskItemContainer.appendChild(deleteItem);
 
     tasksContainer.appendChild(taskItemContainer);
@@ -45,8 +52,8 @@ const handleClick = (taskContent) => {
     for (const task of tasks) {
         const currentTaskIsBeingClicked = task.firstChild.isSameNode(taskContent);
 
-        if (currentTaskIsBeingClicked){
-           task.firstChild.classList.toggle('completed') ;
+        if (currentTaskIsBeingClicked) {
+            task.firstChild.classList.toggle('completed');
         }
     }
 
@@ -59,12 +66,25 @@ const handleDeleteClick = (taskItemContainer, taskContent) => {
     for (const task of tasks) {
         const currentTaskIsBeingClicked = task.firstChild.isSameNode(taskContent);
 
-        if (currentTaskIsBeingClicked){
+        if (currentTaskIsBeingClicked) {
             taskItemContainer.remove();
         }
     }
 
     updateLocalStorage();
+}
+
+const handleEditClick = (taskContent) => {
+    if (!taskContent.classList.contains('completed')) {
+        const newTaskName = prompt("Editar tarefa");
+
+        if (newTaskName) {
+            taskContent.textContent = newTaskName;
+            updateLocalStorage();
+        }
+    } else {
+        alert("Tarefa concluída. Reabra a tarefa para editar.")
+    }
 }
 
 const handleInputChange = () => {
@@ -73,7 +93,7 @@ const handleInputChange = () => {
     if (inputIsValid) {
         return inputElement.classList.remove("error");
     }
-}  
+}
 
 const updateLocalStorage = () => {
     const tasks = tasksContainer.childNodes;
@@ -81,44 +101,58 @@ const updateLocalStorage = () => {
 
     const localStorageTasks = [...tasks].map(task => {
         const content = task.firstChild;
-        const isCompleted = content.classList.contains('completed');
+        const isCompleted = content.classList.contains('completed')
 
-        return {description: content.innerText, isCompleted};
+        return { description: content.innerText, isCompleted };
     });
 
-    localStorage.setItem("tasks", JSON.stringify(localStorageTasks));
+    localStorage.setItem('tasks', JSON.stringify(localStorageTasks));
 };
+
 
 const refreshTaskUsingLocalStorage = () => {
     const tasksFromLocalStorage = JSON.parse(localStorage.getItem('tasks'));
 
-    for (const task of tasksFromLocalStorage) {
-        const taskItemContainer = document.createElement("div");
-        taskItemContainer.classList.add("task-item");
+    if (tasksFromLocalStorage) {
 
-        const taskContent = document.createElement("p");
-        taskContent.innerText = task.description;
+        for (const task of tasksFromLocalStorage) {
+            const taskItemContainer = document.createElement("div");
+            taskItemContainer.classList.add("task-item");
 
-        if (task.isCompleted) {
-            taskContent.classList.add('completed');
+            const taskContent = document.createElement("p");
+            taskContent.innerText = task.description;
+
+            if (task.isCompleted) {
+                taskContent.classList.add('completed');
+            }
+
+            taskContent.addEventListener('click', () => handleClick(taskContent));
+
+            const editItem = document.createElement("i");
+            editItem.classList.add("far");
+            editItem.classList.add("fa-edit");
+
+            editItem.addEventListener('click', () => handleEditClick(taskContent));
+
+            const deleteItem = document.createElement("i");
+            deleteItem.classList.add("far");
+            deleteItem.classList.add("fa-trash-alt");
+
+            deleteItem.addEventListener('click', () => handleDeleteClick(taskItemContainer, taskContent));
+
+            taskItemContainer.appendChild(taskContent);
+            taskItemContainer.appendChild(editItem);
+            taskItemContainer.appendChild(deleteItem);
+
+            tasksContainer.appendChild(taskItemContainer);
         }
 
-        taskContent.addEventListener('click', () => handleClick(taskContent));
-
-        const deleteItem = document.createElement("i");
-        deleteItem.classList.add("far");
-        deleteItem.classList.add("fa-trash-alt");
-
-        deleteItem.addEventListener('click', () => handleDeleteClick(taskItemContainer, taskContent));
-
-        taskItemContainer.appendChild(taskContent);
-        taskItemContainer.appendChild(deleteItem);
-
-        tasksContainer.appendChild(taskItemContainer);
     }
+
 };
 
 refreshTaskUsingLocalStorage();
+
 
 addTaskButton.addEventListener("click", () => handleAddTask());
 
