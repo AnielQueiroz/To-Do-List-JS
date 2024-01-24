@@ -22,11 +22,16 @@ const handleAddTask = () => {
 
     taskContent.addEventListener('click', () => handleClick(taskContent));
 
+    const actionButtonContainer = document.createElement("div");
+    actionButtonContainer.classList.add("action-buttons");
+
     const editItem = document.createElement("i");
     editItem.classList.add("far");
     editItem.classList.add("fa-edit");
 
     editItem.addEventListener('click', () => handleEditClick(taskContent));
+
+    actionButtonContainer.appendChild(editItem);
 
     const deleteItem = document.createElement("i");
     deleteItem.classList.add("far");
@@ -34,9 +39,10 @@ const handleAddTask = () => {
 
     deleteItem.addEventListener('click', () => handleDeleteClick(taskItemContainer, taskContent));
 
+    actionButtonContainer.appendChild(deleteItem);
+
     taskItemContainer.appendChild(taskContent);
-    taskItemContainer.appendChild(editItem);
-    taskItemContainer.appendChild(deleteItem);
+    taskItemContainer.appendChild(actionButtonContainer);
 
     tasksContainer.appendChild(taskItemContainer);
 
@@ -128,11 +134,16 @@ const refreshTaskUsingLocalStorage = () => {
 
             taskContent.addEventListener('click', () => handleClick(taskContent));
 
+            const actionButtonContainer = document.createElement("div");
+            actionButtonContainer.classList.add("action-buttons");
+
             const editItem = document.createElement("i");
             editItem.classList.add("far");
             editItem.classList.add("fa-edit");
 
             editItem.addEventListener('click', () => handleEditClick(taskContent));
+
+            actionButtonContainer.appendChild(editItem);
 
             const deleteItem = document.createElement("i");
             deleteItem.classList.add("far");
@@ -140,10 +151,11 @@ const refreshTaskUsingLocalStorage = () => {
 
             deleteItem.addEventListener('click', () => handleDeleteClick(taskItemContainer, taskContent));
 
-            taskItemContainer.appendChild(taskContent);
-            taskItemContainer.appendChild(editItem);
-            taskItemContainer.appendChild(deleteItem);
+            actionButtonContainer.appendChild(deleteItem);
 
+            taskItemContainer.appendChild(taskContent);
+            taskItemContainer.appendChild(actionButtonContainer);
+            
             tasksContainer.appendChild(taskItemContainer);
         }
 
