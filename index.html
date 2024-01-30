@@ -16,10 +16,19 @@
 </head>
 <body>
     <div class="container">
-        <div class="new-task-container">
-            <input type="text" class="new-task-input" placeholder="Tarefa a ser feita...">
+        <div class="search-task-container">
+            <h3>Pesquisar</h3>
+            <input type="text" name="searchTask" id="searchTask" placeholder="Buscar tarefa...">
+        </div>
 
-            <button class="new-task-button">Adicionar</button>
+        <div class="new-task-container">
+            <h3>Nova Tarefa</h3>
+            <div class="new-task-container-input">
+                <input type="text" class="new-task-input" placeholder="Tarefa a ser feita...">
+
+                <button class="new-task-button" title="Adicionar" alt="Adicionar">Adicionar</button>
+            </div>
+            
         </div>
 
         <div class="tasks-container"></div>
