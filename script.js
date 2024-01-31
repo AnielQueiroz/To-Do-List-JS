@@ -126,6 +126,8 @@ const handleDeleteClick = (taskItemContainer, taskContent) => {
 
 const handleEditClick = (taskContent) => {
     if (!taskContent.classList.contains('completed')) {
+        var originalText = taskContent.innerText;
+
         taskContent.setAttribute('contentEditable', 'true');
         taskContent.classList.add('editable');
         taskContent.focus();
@@ -141,7 +143,11 @@ const handleEditClick = (taskContent) => {
 
             if (newTaskName) {
                 taskContent.textContent = newTaskName;
+                originalText = newTaskName;
                 updateLocalStorage();
+            } else {
+                console.log(originalText)
+                taskContent.innerText = originalText;
             }
 
             document.querySelector(".fa-edit").classList.remove("disabled");
