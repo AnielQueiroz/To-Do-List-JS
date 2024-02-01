@@ -70,6 +70,5 @@ function updateUIForLoggedOut() {
   userProfileDisplay.src = '';
 
   authIcon.className = "fab fa-google";
-  // authIcon.className = "fa-solid fa-right-from-bracket";
   authText.textContent = "Login com o Google";
 }

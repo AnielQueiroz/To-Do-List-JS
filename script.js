@@ -2,6 +2,8 @@ const inputElement = document.querySelector(".new-task-input");
 const addTaskButton = document.querySelector(".new-task-button");
 const searchTask = document.querySelector("#searchTask");
 
+// olhos <i class="fas fa-eye"></i>
+
 const tasksContainer = document.querySelector(".tasks-container");
 console.log(tasksContainer);
 
@@ -27,7 +29,7 @@ const handleAddTask = () => {
     const taskContent = document.createElement("p");
     taskContent.innerText = inputElement.value;
 
-    // taskContent.addEventListener('click', () => handleClick(taskContent));
+    // taskContent.addEventListener('click', () => handleConfirmTask(taskContent));
 
     const actionButtonContainer = document.createElement("div");
     actionButtonContainer.classList.add("action-buttons");
@@ -38,7 +40,7 @@ const handleAddTask = () => {
 
     completeItem.setAttribute("title", "Concluir tarefa");
 
-    completeItem.addEventListener('click', () => handleClick(taskContent));
+    completeItem.addEventListener('click', () => handleConfirmTask(taskContent));
 
     actionButtonContainer.appendChild(completeItem);
 
@@ -73,7 +75,8 @@ const handleAddTask = () => {
 
 };
 
-const handleClick = (taskContent) => {
+const handleConfirmTask = (taskContent) => {
+    console.log('chamaram')
     const tasks = tasksContainer.childNodes;
 
     for (const task of tasks) {
@@ -132,8 +135,9 @@ const handleEditClick = (taskContent) => {
         taskContent.classList.add('editable');
         taskContent.focus();
 
+        const actionsButtons = taskContent.parentNode.querySelector(".action-buttons");
         // Desabilitadno o fa-edit
-        document.querySelector(".fa-edit").classList.add("disabled");
+        actionsButtons.querySelector(".fa-edit").classList.add("disabled");
 
         const saveChanges = () => {
             taskContent.removeAttribute('contentEditable');
@@ -150,7 +154,7 @@ const handleEditClick = (taskContent) => {
                 taskContent.innerText = originalText;
             }
 
-            document.querySelector(".fa-edit").classList.remove("disabled");
+            actionsButtons.querySelector(".fa-edit").classList.remove("disabled");
         }
         
         taskContent.addEventListener('blur', saveChanges)
@@ -233,7 +237,7 @@ const refreshTaskUsingLocalStorage = () => {
                 taskContent.classList.add('completed');
             }
 
-            // taskContent.addEventListener('click', () => handleClick(taskContent));
+            // taskContent.addEventListener('click', () => handleConfirmTask(taskContent));
 
             const actionButtonContainer = document.createElement("div");
             actionButtonContainer.classList.add("action-buttons");
@@ -250,7 +254,7 @@ const refreshTaskUsingLocalStorage = () => {
                 completeItem.setAttribute("title", "Concluir tarefa");
             }           
 
-            completeItem.addEventListener('click', () => handleClick(taskContent));
+            completeItem.addEventListener('click', () => handleConfirmTask(taskContent));
 
             actionButtonContainer.appendChild(completeItem);
 
