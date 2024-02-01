@@ -1,7 +1,8 @@
 import { getCurrentUser, login } from "./firebase.js";
 
-let wantBeAnonymous = false;
-let isLogged = false;
+let maxTry = 1;
+let currentTry = 0;
+let user = null;
 
 // modal
 const showModal = () => {
@@ -17,13 +18,12 @@ const showModal = () => {
   document.getElementById("continueWithoutLogin").addEventListener("click", () => {
       modal.style.display = "none";
       updateLocalStorage(null);
-      wantBeAnonymous = true;
   });
 
   // go to login
   document.getElementById("goToLogin").addEventListener("click", () => {
     modal.style.display = "none";
-    login();
+    // console.log(login());
   });
 };
 
@@ -100,15 +100,19 @@ const handleAddTask = () => {
 
   inputElement.value = "";
 
-  if (!wantBeAnonymous) {
+  user = getCurrentUser();
+  if (!user) {
+    if (currentTry < maxTry) {
+      currentTry++;
       showModal();
+      return;
+    }
   }
 
   updateLocalStorage(user);
 };
 
 const handleConfirmTask = (taskContent) => {
-  console.log("chamaram");
   const tasks = tasksContainer.childNodes;
 
   for (const task of tasks) {
@@ -145,7 +149,7 @@ const handleConfirmTask = (taskContent) => {
     }
   }
 
-  updateLocalStorage();
+  updateLocalStorage(user);
 };
 
 const handleDeleteClick = (taskItemContainer, taskContent) => {
@@ -159,7 +163,7 @@ const handleDeleteClick = (taskItemContainer, taskContent) => {
     }
   }
 
-  updateLocalStorage();
+  updateLocalStorage(user);
 };
 
 const handleEditClick = (taskContent) => {
@@ -184,7 +188,7 @@ const handleEditClick = (taskContent) => {
       if (newTaskName) {
         taskContent.textContent = newTaskName;
         originalText = newTaskName;
-        updateLocalStorage();
+        updateLocalStorage(user);
       } else {
         console.log(originalText);
         taskContent.innerText = originalText;
@@ -211,8 +215,8 @@ const handleInputChange = () => {
   }
 };
 
-const updateLocalStorage = (userId) => {
-  const user = userId;
+const updateLocalStorage = (userReceived) => {
+  const user = userReceived || getCurrentUser() || { uid: "generic" };
 
   const tasks = tasksContainer.childNodes;
 
@@ -223,12 +227,9 @@ const updateLocalStorage = (userId) => {
     return { description: content.innerText, isCompleted };
   });
 
-  localStorage.setItem(
-    `tasks_${user || "generic"}`,
-    JSON.stringify(localStorageTasks)
-  );
+  localStorage.setItem(`tasks_${user.uid}`, JSON.stringify(localStorageTasks));
 
-  const tasksFromLocalStorage = JSON.parse(localStorage.getItem("tasks"));
+  const tasksFromLocalStorage = JSON.parse(localStorage.getItem(`tasks_${user.uid}`));
   if (tasksFromLocalStorage.length === 0) {
     const p = document.createElement("p");
     p.classList.add("no-tasks");
@@ -252,8 +253,10 @@ const handleSearchTasks = () => {
   });
 };
 
-const refreshTaskUsingLocalStorage = () => {
-  const tasksFromLocalStorage = JSON.parse(localStorage.getItem("tasks"));
+export const refreshTaskUsingLocalStorage = (userFromGoogle) => {  
+  user = userFromGoogle || getCurrentUser() || { uid: "generic" };
+  
+  const tasksFromLocalStorage = JSON.parse(localStorage.getItem(`tasks_${user.uid}`));
 
   if (!tasksFromLocalStorage || tasksFromLocalStorage.length === 0) {
     const p = document.createElement("p");
@@ -329,6 +332,8 @@ const refreshTaskUsingLocalStorage = () => {
       taskItemContainer.appendChild(taskContent);
       taskItemContainer.appendChild(actionButtonContainer);
 
+      tasksContainer.innerHTML = "";
+
       tasksContainer.appendChild(taskItemContainer);
     }
   }
@@ -341,7 +346,7 @@ const refreshTaskUsingLocalStorage = () => {
   // }
 };
 
-refreshTaskUsingLocalStorage();
+// refreshTaskUsingLocalStorage();
 
 addTaskButton.addEventListener("click", () => handleAddTask());
 

@@ -7,6 +7,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-analytics.js";
 
+import { refreshTaskUsingLocalStorage } from "./script.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyDAqH21-kIftysMEdlmiU8lXgUBmlkqE1Y",
   authDomain: "todolist-26813.firebaseapp.com",
@@ -58,8 +60,10 @@ authButton.addEventListener("click", () => {
 auth.onAuthStateChanged((user) => {
   if (user) {
     updateUIForLoggedIn(user);
+    refreshTaskUsingLocalStorage(user);
   } else {
     updateUIForLoggedOut();
+    refreshTaskUsingLocalStorage(null);
   }
 });
 
@@ -104,4 +108,6 @@ export const login = () => {
         console.error("Erro no login:", error);
       });
   }
+
+  return auth.currentUser;
 };
