@@ -17,6 +17,15 @@
 
 </head>
 <body>
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Você não está logado. Deseja continuar sem salvar suas tarefas na nuvem?</p>
+            <button id="continueWithoutLogin">Continuar</button>
+            <button id="goToLogin">Ir para Login</button>
+        </div>
+    </div>
+    
     <header class="header">
         <h1 class="title">Tarefando</h1>
         <div class="google-login-box">
@@ -51,6 +60,6 @@
 
     <script src="https://kit.fontawesome.com/605f419b48.js" crossorigin="anonymous"></script>
 
-    <script src="./script.js"></script>
+    <script type="module" src="./script.js"></script>
 </body>
 </html>

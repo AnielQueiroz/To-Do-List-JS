@@ -1,8 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-analytics.js";
-
-let userIsLoggedIn = false;
 
 const firebaseConfig = {
   apiKey: "AIzaSyDAqH21-kIftysMEdlmiU8lXgUBmlkqE1Y",
@@ -22,36 +25,41 @@ const provider = new GoogleAuthProvider();
 
 const analytics = getAnalytics(app);
 
-const authButton = document.getElementById('auth-button');
-const authIcon = document.getElementById('auth-icon');
-const authText = document.getElementById('auth-text');
-const userNameDisplay = document.getElementById('username');
+const authButton = document.getElementById("auth-button");
+const authIcon = document.getElementById("auth-icon");
+const authText = document.getElementById("auth-text");
+const userNameDisplay = document.getElementById("username");
 // const userEmailDisplay = document.getElementById('email');
-const userProfileDisplay = document.getElementById('profile');
+const userProfileDisplay = document.getElementById("profile");
 
-authButton.addEventListener('click', () => {
+// Botão de login do modal
+
+authButton.addEventListener("click", () => {
   if (auth.currentUser) {
-      signOut(auth).then(() => {
-          updateUIForLoggedOut();
-      }).catch((error) => {
-          console.error('Erro ao sair:', error);
+    signOut(auth)
+      .then(() => {
+        updateUIForLoggedOut();
+      })
+      .catch((error) => {
+        console.error("Erro ao sair:", error);
       });
   } else {
-      signInWithPopup(auth, provider)
-          .then((result) => {
-              const user = result.user;
-              updateUIForLoggedIn(user);
-          }).catch((error) => {
-              console.error('Erro no login:', error);
-          });
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const user = result.user;
+        updateUIForLoggedIn(user);
+      })
+      .catch((error) => {
+        console.error("Erro no login:", error);
+      });
   }
 });
 
-auth.onAuthStateChanged(user => {
+auth.onAuthStateChanged((user) => {
   if (user) {
-      updateUIForLoggedIn(user);
+    updateUIForLoggedIn(user);
   } else {
-      updateUIForLoggedOut();
+    updateUIForLoggedOut();
   }
 });
 
@@ -65,10 +73,35 @@ function updateUIForLoggedIn(user) {
 }
 
 function updateUIForLoggedOut() {
-  userNameDisplay.textContent = '';
+  userNameDisplay.textContent = "";
   // userEmailDisplay.textContent = '';
-  userProfileDisplay.src = '';
+  userProfileDisplay.src = "";
 
   authIcon.className = "fab fa-google";
   authText.textContent = "Login com o Google";
 }
+
+export const getCurrentUser = () => {
+  return auth.currentUser;
+};
+
+export const login = () => {
+  if (auth.currentUser) {
+    signOut(auth)
+      .then(() => {
+        updateUIForLoggedOut();
+      })
+      .catch((error) => {
+        console.error("Erro ao sair:", error);
+      });
+  } else {
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const user = result.user;
+        updateUIForLoggedIn(user);
+      })
+      .catch((error) => {
+        console.error("Erro no login:", error);
+      });
+  }
+};

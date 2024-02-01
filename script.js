@@ -1,3 +1,32 @@
+import { getCurrentUser, login } from "./firebase.js";
+
+let wantBeAnonymous = false;
+let isLogged = false;
+
+// modal
+const showModal = () => {
+  const modal = document.getElementById("loginModal");
+  modal.style.display = "block";
+
+  // close
+  document.getElementsByClassName("close")[0].addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  // continue without login
+  document.getElementById("continueWithoutLogin").addEventListener("click", () => {
+      modal.style.display = "none";
+      updateLocalStorage(null);
+      wantBeAnonymous = true;
+  });
+
+  // go to login
+  document.getElementById("goToLogin").addEventListener("click", () => {
+    modal.style.display = "none";
+    login();
+  });
+};
+
 const inputElement = document.querySelector(".new-task-input");
 const addTaskButton = document.querySelector(".new-task-button");
 const searchTask = document.querySelector("#searchTask");
@@ -7,300 +36,312 @@ const searchTask = document.querySelector("#searchTask");
 const tasksContainer = document.querySelector(".tasks-container");
 console.log(tasksContainer);
 
-const validateInput = () => inputElement.value.trim().length > 0
+const validateInput = () => inputElement.value.trim().length > 0;
 
 const handleAddTask = () => {
-    const inputIsValid = validateInput();
+  const inputIsValid = validateInput();
 
-    console.log(inputIsValid);
+  if (!inputIsValid) {
+    return inputElement.classList.add("error");
+  }
 
-    if (!inputIsValid) {
-        return inputElement.classList.add("error");
-    }
+  const pElement = document.querySelector(".no-tasks");
+  if (pElement) {
+    tasksContainer.removeChild(pElement);
+  }
 
-    const pElement = document.querySelector(".no-tasks");
-    if (pElement) {
-        tasksContainer.removeChild(pElement);
-    }
+  const taskItemContainer = document.createElement("div");
+  taskItemContainer.classList.add("task-item");
 
-    const taskItemContainer = document.createElement("div");
-    taskItemContainer.classList.add("task-item");
+  const taskContent = document.createElement("p");
+  taskContent.innerText = inputElement.value;
 
-    const taskContent = document.createElement("p");
-    taskContent.innerText = inputElement.value;
+  // taskContent.addEventListener('click', () => handleConfirmTask(taskContent));
 
-    // taskContent.addEventListener('click', () => handleConfirmTask(taskContent));
+  const actionButtonContainer = document.createElement("div");
+  actionButtonContainer.classList.add("action-buttons");
 
-    const actionButtonContainer = document.createElement("div");
-    actionButtonContainer.classList.add("action-buttons");
+  const completeItem = document.createElement("i");
+  completeItem.classList.add("far");
+  completeItem.classList.add("fa-check-circle");
 
-    const completeItem = document.createElement("i");
-    completeItem.classList.add("far");
-    completeItem.classList.add("fa-check-circle");
+  completeItem.setAttribute("title", "Concluir tarefa");
 
-    completeItem.setAttribute("title", "Concluir tarefa");
+  completeItem.addEventListener("click", () => handleConfirmTask(taskContent));
 
-    completeItem.addEventListener('click', () => handleConfirmTask(taskContent));
+  actionButtonContainer.appendChild(completeItem);
 
-    actionButtonContainer.appendChild(completeItem);
+  const editItem = document.createElement("i");
+  editItem.classList.add("far");
+  editItem.classList.add("fa-edit");
 
-    const editItem = document.createElement("i");
-    editItem.classList.add("far");
-    editItem.classList.add("fa-edit");
+  editItem.setAttribute("title", "Editar tarefa");
 
-    editItem.setAttribute("title", "Editar tarefa");
+  editItem.addEventListener("click", () => handleEditClick(taskContent));
 
-    editItem.addEventListener('click', () => handleEditClick(taskContent));
+  actionButtonContainer.appendChild(editItem);
 
-    actionButtonContainer.appendChild(editItem);
+  const deleteItem = document.createElement("i");
+  deleteItem.classList.add("far");
+  deleteItem.classList.add("fa-trash-alt");
 
-    const deleteItem = document.createElement("i");
-    deleteItem.classList.add("far");
-    deleteItem.classList.add("fa-trash-alt");
+  deleteItem.setAttribute("title", "Deletar tarefa");
 
-    deleteItem.setAttribute("title", "Deletar tarefa");
+  deleteItem.addEventListener("click", () =>
+    handleDeleteClick(taskItemContainer, taskContent)
+  );
 
-    deleteItem.addEventListener('click', () => handleDeleteClick(taskItemContainer, taskContent));
+  actionButtonContainer.appendChild(deleteItem);
 
-    actionButtonContainer.appendChild(deleteItem);
+  taskItemContainer.appendChild(taskContent);
+  taskItemContainer.appendChild(actionButtonContainer);
 
-    taskItemContainer.appendChild(taskContent);
-    taskItemContainer.appendChild(actionButtonContainer);
+  tasksContainer.appendChild(taskItemContainer);
 
-    tasksContainer.appendChild(taskItemContainer);
+  inputElement.value = "";
 
-    inputElement.value = "";
+  if (!wantBeAnonymous) {
+      showModal();
+  }
 
-    updateLocalStorage();
-
+  updateLocalStorage(user);
 };
 
 const handleConfirmTask = (taskContent) => {
-    console.log('chamaram')
-    const tasks = tasksContainer.childNodes;
+  console.log("chamaram");
+  const tasks = tasksContainer.childNodes;
 
-    for (const task of tasks) {
-        const currentTaskIsBeingClicked = task.firstChild.isSameNode(taskContent);
+  for (const task of tasks) {
+    const currentTaskIsBeingClicked = task.firstChild.isSameNode(taskContent);
 
-        if (currentTaskIsBeingClicked) {
-            const taskContent = task.firstChild;
-            taskContent.classList.toggle('completed');
+    if (currentTaskIsBeingClicked) {
+      const taskContent = task.firstChild;
+      taskContent.classList.toggle("completed");
 
-            const actionsButtons = taskContent.parentNode.querySelector(".action-buttons");
+      const actionsButtons =
+        taskContent.parentNode.querySelector(".action-buttons");
 
-            // Desabilitadno o fa-edit
-            actionsButtons.querySelector(".fa-edit").classList.toggle("disabled");
+      // Desabilitadno o fa-edit
+      actionsButtons.querySelector(".fa-edit").classList.toggle("disabled");
 
-            // Lógica para alterar o botão de check para undo
-            const checkItem = actionsButtons.querySelector(".fa-check-circle") || actionsButtons.querySelector(".fa-undo-alt");
-       
-            if (checkItem.classList.contains("fa-check-circle")) {
-                checkItem.classList.remove("far");
-                checkItem.classList.remove("fa-check-circle");
-                checkItem.classList.add("fas");
-                checkItem.classList.add("fa-undo-alt");
-                checkItem.setAttribute("title", "Retirar concluído");
-            } else {
-                checkItem.classList.remove("fas");
-                checkItem.classList.remove("fa-undo-alt");
-                checkItem.classList.add("far");
-                checkItem.classList.add("fa-check-circle");
-                checkItem.setAttribute("title", "Concluir tarefa");
-            }
-        }
+      // Lógica para alterar o botão de check para undo
+      const checkItem =
+        actionsButtons.querySelector(".fa-check-circle") ||
+        actionsButtons.querySelector(".fa-undo-alt");
+
+      if (checkItem.classList.contains("fa-check-circle")) {
+        checkItem.classList.remove("far");
+        checkItem.classList.remove("fa-check-circle");
+        checkItem.classList.add("fas");
+        checkItem.classList.add("fa-undo-alt");
+        checkItem.setAttribute("title", "Retirar concluído");
+      } else {
+        checkItem.classList.remove("fas");
+        checkItem.classList.remove("fa-undo-alt");
+        checkItem.classList.add("far");
+        checkItem.classList.add("fa-check-circle");
+        checkItem.setAttribute("title", "Concluir tarefa");
+      }
     }
+  }
 
-    updateLocalStorage();
+  updateLocalStorage();
 };
 
 const handleDeleteClick = (taskItemContainer, taskContent) => {
-    const tasks = tasksContainer.childNodes;
+  const tasks = tasksContainer.childNodes;
 
-    for (const task of tasks) {
-        const currentTaskIsBeingClicked = task.firstChild.isSameNode(taskContent);
+  for (const task of tasks) {
+    const currentTaskIsBeingClicked = task.firstChild.isSameNode(taskContent);
 
-        if (currentTaskIsBeingClicked) {
-            taskItemContainer.remove();
-        }
+    if (currentTaskIsBeingClicked) {
+      taskItemContainer.remove();
     }
+  }
 
-    updateLocalStorage();
-}
+  updateLocalStorage();
+};
 
 const handleEditClick = (taskContent) => {
-    if (!taskContent.classList.contains('completed')) {
-        var originalText = taskContent.innerText;
+  if (!taskContent.classList.contains("completed")) {
+    var originalText = taskContent.innerText;
 
-        taskContent.setAttribute('contentEditable', 'true');
-        taskContent.classList.add('editable');
-        taskContent.focus();
+    taskContent.setAttribute("contentEditable", "true");
+    taskContent.classList.add("editable");
+    taskContent.focus();
 
-        const actionsButtons = taskContent.parentNode.querySelector(".action-buttons");
-        // Desabilitadno o fa-edit
-        actionsButtons.querySelector(".fa-edit").classList.add("disabled");
+    const actionsButtons =
+      taskContent.parentNode.querySelector(".action-buttons");
+    // Desabilitadno o fa-edit
+    actionsButtons.querySelector(".fa-edit").classList.add("disabled");
 
-        const saveChanges = () => {
-            taskContent.removeAttribute('contentEditable');
-            taskContent.classList.remove('editable');
+    const saveChanges = () => {
+      taskContent.removeAttribute("contentEditable");
+      taskContent.classList.remove("editable");
 
-            const newTaskName = taskContent.innerText;
+      const newTaskName = taskContent.innerText;
 
-            if (newTaskName) {
-                taskContent.textContent = newTaskName;
-                originalText = newTaskName;
-                updateLocalStorage();
-            } else {
-                console.log(originalText)
-                taskContent.innerText = originalText;
-            }
+      if (newTaskName) {
+        taskContent.textContent = newTaskName;
+        originalText = newTaskName;
+        updateLocalStorage();
+      } else {
+        console.log(originalText);
+        taskContent.innerText = originalText;
+      }
 
-            actionsButtons.querySelector(".fa-edit").classList.remove("disabled");
-        }
-        
-        taskContent.addEventListener('blur', saveChanges)
-        taskContent.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                saveChanges();
-            }
-        });
-    }
-}
+      actionsButtons.querySelector(".fa-edit").classList.remove("disabled");
+    };
+
+    taskContent.addEventListener("blur", saveChanges);
+    taskContent.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        saveChanges();
+      }
+    });
+  }
+};
 
 const handleInputChange = () => {
-    const inputIsValid = validateInput();
+  const inputIsValid = validateInput();
 
-    if (inputIsValid) {
-        return inputElement.classList.remove("error");
-    }
-}
+  if (inputIsValid) {
+    return inputElement.classList.remove("error");
+  }
+};
 
-const updateLocalStorage = () => {
-    const tasks = tasksContainer.childNodes;
+const updateLocalStorage = (userId) => {
+  const user = userId;
 
-    const localStorageTasks = [...tasks].map(task => {
-        const content = task.firstChild;
-        const isCompleted = content.classList.contains('completed')
+  const tasks = tasksContainer.childNodes;
 
-        return { description: content.innerText, isCompleted };
-    });
+  const localStorageTasks = [...tasks].map((task) => {
+    const content = task.firstChild;
+    const isCompleted = content.classList.contains("completed");
 
-    localStorage.setItem('tasks', JSON.stringify(localStorageTasks));
+    return { description: content.innerText, isCompleted };
+  });
 
-    const tasksFromLocalStorage = JSON.parse(localStorage.getItem('tasks'));
-    if (tasksFromLocalStorage.length === 0) {
-        const p = document.createElement("p");
-        p.classList.add("no-tasks");
-        p.innerText = "Sem tarefas por aqui";
-       
-        tasksContainer.appendChild(p);
-    }
+  localStorage.setItem(
+    `tasks_${user || "generic"}`,
+    JSON.stringify(localStorageTasks)
+  );
+
+  const tasksFromLocalStorage = JSON.parse(localStorage.getItem("tasks"));
+  if (tasksFromLocalStorage.length === 0) {
+    const p = document.createElement("p");
+    p.classList.add("no-tasks");
+    p.innerText = "Sem tarefas por aqui";
+
+    tasksContainer.appendChild(p);
+  }
 };
 
 const handleSearchTasks = () => {
-    const searchValue = searchTask.value.toLowerCase();
-    const tasks = document.querySelectorAll(".task-item");
+  const searchValue = searchTask.value.toLowerCase();
+  const tasks = document.querySelectorAll(".task-item");
 
-    tasks.forEach(task => {
-        const taskText = task.textContent.toLowerCase();
-        if (taskText.includes(searchValue)) {
-            task.style.display = "flex";
-        } else {
-            task.style.display = "none";
-        }
-    })
-}
+  tasks.forEach((task) => {
+    const taskText = task.textContent.toLowerCase();
+    if (taskText.includes(searchValue)) {
+      task.style.display = "flex";
+    } else {
+      task.style.display = "none";
+    }
+  });
+};
 
 const refreshTaskUsingLocalStorage = () => {
-    const tasksFromLocalStorage = JSON.parse(localStorage.getItem('tasks'));
+  const tasksFromLocalStorage = JSON.parse(localStorage.getItem("tasks"));
 
-    if (!tasksFromLocalStorage || tasksFromLocalStorage.length === 0) {
-        const p = document.createElement("p");
-        p.classList.add("no-tasks");
-        p.innerText = "Sem tarefas por aqui";
-       
-        tasksContainer.appendChild(p);
+  if (!tasksFromLocalStorage || tasksFromLocalStorage.length === 0) {
+    const p = document.createElement("p");
+    p.classList.add("no-tasks");
+    p.innerText = "Sem tarefas por aqui";
 
-        return;
+    tasksContainer.appendChild(p);
+
+    return;
+  }
+
+  if (tasksFromLocalStorage.length > 0) {
+    for (const task of tasksFromLocalStorage) {
+      const taskItemContainer = document.createElement("div");
+      taskItemContainer.classList.add("task-item");
+
+      const taskContent = document.createElement("p");
+      taskContent.innerText = task.description;
+
+      if (task.isCompleted) {
+        taskContent.classList.add("completed");
+      }
+
+      // taskContent.addEventListener('click', () => handleConfirmTask(taskContent));
+
+      const actionButtonContainer = document.createElement("div");
+      actionButtonContainer.classList.add("action-buttons");
+
+      const completeItem = document.createElement("i");
+
+      if (task.isCompleted) {
+        completeItem.classList.add("fas");
+        completeItem.classList.add("fa-undo-alt");
+        completeItem.setAttribute("title", "Retirar concluído");
+      } else {
+        completeItem.classList.add("far");
+        completeItem.classList.add("fa-check-circle");
+        completeItem.setAttribute("title", "Concluir tarefa");
+      }
+
+      completeItem.addEventListener("click", () =>
+        handleConfirmTask(taskContent)
+      );
+
+      actionButtonContainer.appendChild(completeItem);
+
+      const editItem = document.createElement("i");
+      editItem.classList.add("far");
+      editItem.classList.add("fa-edit");
+
+      if (task.isCompleted) {
+        editItem.classList.add("disabled");
+      }
+
+      editItem.setAttribute("title", "Editar tarefa");
+
+      editItem.addEventListener("click", () => handleEditClick(taskContent));
+
+      actionButtonContainer.appendChild(editItem);
+
+      const deleteItem = document.createElement("i");
+      deleteItem.classList.add("far");
+      deleteItem.classList.add("fa-trash-alt");
+
+      deleteItem.setAttribute("title", "Deletar tarefa");
+
+      deleteItem.addEventListener("click", () =>
+        handleDeleteClick(taskItemContainer, taskContent)
+      );
+
+      actionButtonContainer.appendChild(deleteItem);
+
+      taskItemContainer.appendChild(taskContent);
+      taskItemContainer.appendChild(actionButtonContainer);
+
+      tasksContainer.appendChild(taskItemContainer);
     }
+  }
+  // else {
+  //     const p = document.createElement("p");
+  //     p.classList.add("no-tasks");
+  //     p.innerText = "Sem tarefas por aqui";
 
-    if (tasksFromLocalStorage.length > 0) {
-
-        for (const task of tasksFromLocalStorage) {
-            const taskItemContainer = document.createElement("div");
-            taskItemContainer.classList.add("task-item");
-
-            const taskContent = document.createElement("p");
-            taskContent.innerText = task.description;
-
-            if (task.isCompleted) {
-                taskContent.classList.add('completed');
-            }
-
-            // taskContent.addEventListener('click', () => handleConfirmTask(taskContent));
-
-            const actionButtonContainer = document.createElement("div");
-            actionButtonContainer.classList.add("action-buttons");
-
-            const completeItem = document.createElement("i");
-
-            if (task.isCompleted) {
-                completeItem.classList.add("fas");
-                completeItem.classList.add("fa-undo-alt");
-                completeItem.setAttribute("title", "Retirar concluído");
-            } else {
-                completeItem.classList.add("far");
-                completeItem.classList.add("fa-check-circle");
-                completeItem.setAttribute("title", "Concluir tarefa");
-            }           
-
-            completeItem.addEventListener('click', () => handleConfirmTask(taskContent));
-
-            actionButtonContainer.appendChild(completeItem);
-
-            const editItem = document.createElement("i");
-            editItem.classList.add("far");
-            editItem.classList.add("fa-edit");
-
-            if (task.isCompleted) {
-                editItem.classList.add("disabled");
-            }
-
-            editItem.setAttribute("title", "Editar tarefa");
-
-            editItem.addEventListener('click', () => handleEditClick(taskContent));
-
-            actionButtonContainer.appendChild(editItem);
-
-            const deleteItem = document.createElement("i");
-            deleteItem.classList.add("far");
-            deleteItem.classList.add("fa-trash-alt");
-
-            deleteItem.setAttribute("title", "Deletar tarefa");
-
-            deleteItem.addEventListener('click', () => handleDeleteClick(taskItemContainer, taskContent));
-
-            actionButtonContainer.appendChild(deleteItem);
-
-            taskItemContainer.appendChild(taskContent);
-            taskItemContainer.appendChild(actionButtonContainer);
-            
-            tasksContainer.appendChild(taskItemContainer);
-        }
-
-    }
-    // else {
-    //     const p = document.createElement("p");
-    //     p.classList.add("no-tasks");
-    //     p.innerText = "Sem tarefas por aqui";
-       
-    //     tasksContainer.appendChild(p);
-    // }
-
+  //     tasksContainer.appendChild(p);
+  // }
 };
 
 refreshTaskUsingLocalStorage();
-
 
 addTaskButton.addEventListener("click", () => handleAddTask());
 
