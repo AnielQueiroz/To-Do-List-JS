@@ -5,6 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <script type="module" src="./firebase.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
@@ -15,6 +17,19 @@
 
 </head>
 <body>
+    <header class="header">
+        <h1 class="title">Tarefando</h1>
+        <div class="google-login-box">
+            <img id="profile">
+            <h2 id="username"></h2>
+            <!-- <p id="email"></p> -->
+
+            <button id="auth-button">
+                <i class="fab" id="auth-icon"></i><span id="auth-text">Login com o Google</span>
+            </button>
+        </div>
+    </header>
+
     <div class="container">
         <div class="search-task-container">
             <h3>Pesquisar</h3>
@@ -37,6 +52,5 @@
     <script src="https://kit.fontawesome.com/605f419b48.js" crossorigin="anonymous"></script>
 
     <script src="./script.js"></script>
-
 </body>
 </html>

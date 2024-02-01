@@ -210,6 +210,16 @@ const handleSearchTasks = () => {
 const refreshTaskUsingLocalStorage = () => {
     const tasksFromLocalStorage = JSON.parse(localStorage.getItem('tasks'));
 
+    if (!tasksFromLocalStorage || tasksFromLocalStorage.length === 0) {
+        const p = document.createElement("p");
+        p.classList.add("no-tasks");
+        p.innerText = "Sem tarefas por aqui";
+       
+        tasksContainer.appendChild(p);
+
+        return;
+    }
+
     if (tasksFromLocalStorage.length > 0) {
 
         for (const task of tasksFromLocalStorage) {
@@ -275,13 +285,13 @@ const refreshTaskUsingLocalStorage = () => {
         }
 
     }
-    else {
-        const p = document.createElement("p");
-        p.classList.add("no-tasks");
-        p.innerText = "Sem tarefas por aqui";
+    // else {
+    //     const p = document.createElement("p");
+    //     p.classList.add("no-tasks");
+    //     p.innerText = "Sem tarefas por aqui";
        
-        tasksContainer.appendChild(p);
-    }
+    //     tasksContainer.appendChild(p);
+    // }
 
 };
 
